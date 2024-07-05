@@ -1,11 +1,13 @@
 import { FC } from "react";
 import { Stack } from "react-bootstrap";
-import { IoMdDoneAll } from "react-icons/io";
+import { IoMdClose, IoMdDoneAll } from "react-icons/io";
 import { MdDelete } from "react-icons/md";
+import { todoProps } from "../../types";
 
-const Todo: FC = () => {
+const Todo: FC<todoProps> = ({ todo, deleteTodo, updateTodo }) => {
   return (
     <Stack
+      key={todo.id}
       direction="horizontal"
       gap={3}
       className="justify-content-between rounded-2 p-3"
@@ -15,8 +17,23 @@ const Todo: FC = () => {
       }}
     >
       <Stack direction="vertical" gap={1}>
-        <h3 style={{ color: "var(--secondary)" }}>Do Somethung</h3>
-        <span style={{ color: "var(--white-floating)" }}>1235</span>
+        <h3
+          style={{
+            color: "var(--secondary)",
+            fontSize: "1.2rem",
+            textDecoration: todo?.completed ? "line-through" : "none",
+          }}
+        >
+          {todo?.title}
+        </h3>
+        <span
+          style={{
+            color: "var(--white-floating)",
+            textDecoration: todo?.completed ? "line-through" : "none",
+          }}
+        >
+          {todo?.userId}
+        </span>
       </Stack>
       <Stack direction="horizontal" gap={2}>
         <MdDelete
@@ -25,14 +42,27 @@ const Todo: FC = () => {
             color: "var(--danger)",
             cursor: "pointer",
           }}
+          onClick={() => deleteTodo(todo.userId)}
         />
-        <IoMdDoneAll
-          style={{
-            fontSize: "1.7rem",
-            color: "var(--success)",
-            cursor: "pointer",
-          }}
-        />
+        {todo?.completed ? (
+          <IoMdClose
+            style={{
+              fontSize: "1.7rem",
+              color: "var(--danger)",
+              cursor: "pointer",
+            }}
+            onClick={() => updateTodo(todo.userId)}
+          />
+        ) : (
+          <IoMdDoneAll
+            style={{
+              fontSize: "1.7rem",
+              color: "var(--success)",
+              cursor: "pointer",
+            }}
+            onClick={() => updateTodo(todo.userId)}
+          />
+        )}
       </Stack>
     </Stack>
   );

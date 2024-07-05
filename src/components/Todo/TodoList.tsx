@@ -1,8 +1,30 @@
-import { FC } from "react";
-import { Col, Row, Stack } from "react-bootstrap";
+import { FC, useEffect, useMemo, useState } from "react";
+import { Spinner, Stack } from "react-bootstrap";
 import TodosWrapper from "./TodosWrapper";
+import { TodoForm } from "../../helpers";
+import { todo } from "../../types";
 
 const TodoList: FC = () => {
+  const [loading, setLoading] = useState(false);
+  const initialTodos = useMemo(() => {
+    const savedTodos = localStorage.getItem("allTodos");
+    return savedTodos
+      ? JSON.parse(savedTodos)
+      : [
+          {
+            id: 0,
+            title: "",
+            completed: false,
+            userId: 0,
+          },
+        ];
+  }, []);
+
+  const [allTodos, setAllTodos] = useState<todo[]>(initialTodos);
+
+  useEffect(() => {
+    localStorage.setItem("allTodos", JSON.stringify(allTodos));
+  }, [allTodos]);
   return (
     <Stack
       direction="vertical"
@@ -29,69 +51,22 @@ const TodoList: FC = () => {
           backgroundColor: "var(--primary)",
         }}
       >
-        <Row
-          className="w-100 pb-4"
-          style={{ borderBottom: "1px solid var(--secondary)" }}
-        >
-          <Col sm={12} md={5}>
-            <Stack direction="vertical" className="w-100">
-              <label
-                className="mb-2 fw-semibold"
-                style={{ color: "var(--white-floating)" }}
-                htmlFor="title"
-              >
-                Title:
-              </label>
-              <input
-                className="rounded-2 p-2"
-                style={{ width: "100%", border: "none", outline: "none" }}
-                name="title"
-                type="text"
-                placeholder="Todo Title?"
-              />
-            </Stack>
-          </Col>
-          <Col sm={12} md={5}>
-            <Stack direction="vertical" className="w-100">
-              <label
-                className="mb-2 fw-semibold"
-                style={{ color: "var(--white-floating)" }}
-                htmlFor="userId"
-              >
-                User Id:
-              </label>
-              <input
-                className="rounded-2 p-2"
-                style={{ width: "100%", border: "none", outline: "none" }}
-                name="userId"
-                type="text"
-                placeholder="User Id?"
-              />
-            </Stack>
-          </Col>
-          <Col sm={12} md={2}>
-            <button
-              className="rounded-2 "
-              style={{
-                cursor: "pointer",
-                width: "100%",
-                color: "var(--white-floating)",
-                backgroundColor: "var(--secondary)",
-                marginTop: "2rem",
-                padding: "0.5rem 0.6rem",
-                border: "1px solid var(--secondary)",
-              }}
-            >
-              Add
-            </button>
-          </Col>
-        </Row>
-        <div
-          className="mt-2 w-100"
-          style={{ height: " 400px", overflowY: "scroll" }}
-        >
-          <TodosWrapper />
-        </div>
+        <TodoForm setAllTodos={setAllTodos} setLoading={setLoading} />
+        {loading ? (
+          <div
+            className="d-flex justify-content-center align-items-center w-100"
+            style={{ height: "400px" }}
+          >
+            <Spinner style={{ color: "var(--secondary)" }} />
+          </div>
+        ) : (
+          <div
+            className="mt-2 w-100"
+            style={{ height: " 400px", overflowY: "auto" }}
+          >
+            <TodosWrapper allTodos={allTodos} setAllTodos={setAllTodos} />
+          </div>
+        )}
       </Stack>
     </Stack>
   );

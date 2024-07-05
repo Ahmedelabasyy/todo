@@ -1,32 +1,52 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect } from "react";
 import { Stack } from "react-bootstrap";
 import Todo from "./Todo";
 import axios from "axios";
+import { NoTodos } from "../../helpers";
 import { todo } from "../../types";
-const TodosWrapper: FC = () => {
-  const [allTodos, setAllTodos] = useState<todo>([
-    {
-      id: 0,
-      todo: "",
-      completed: false,
-      userId: 0,
-    },
-  ]);
+
+type Props = {
+  setAllTodos: any;
+  allTodos: any;
+};
+
+const TodosWrapper: FC<Props> = ({ setAllTodos, allTodos }) => {
   const getAllTodos = async () => {
     try {
-      const res = await axios.get("https://dummyjson.com/todos?limit=3");
-      console.log(res);
-      setAllTodos(res.data.todos);
+      const res = await axios.get(
+        "https://jsonplaceholder.typicode.com/todos/1"
+      );
+      // Merge the fetched todo only if it's not already in the state
+      setAllTodos((prevTodos: todo) => {
+        if (prevTodos.some((todo) => todo.id === res.data.id)) {
+          return prevTodos;
+        }
+        return [...prevTodos, res.data];
+      });
     } catch (error) {
       console.log(error);
     }
   };
 
   useEffect(() => {
-    getAllTodos();
-  }, []);
+    if (allTodos.length === 0) {
+      getAllTodos();
+    }
+  }, [allTodos.length]);
 
-  console.log("allTodos", allTodos);
+  const updateTodo = (id: number) => {
+    setAllTodos((prevTodos: todo) =>
+      prevTodos.map((todo) =>
+        todo.userId === id ? { ...todo, completed: !todo.completed } : todo
+      )
+    );
+  };
+
+  const deleteTodo = (Id: number) => {
+    setAllTodos((prevTodos: todo[]) =>
+      prevTodos.filter((todo: any) => todo.userId !== Id)
+    );
+  };
 
   return (
     <Stack
@@ -35,11 +55,18 @@ const TodosWrapper: FC = () => {
       className="justify-content-start align-items-start "
       style={{ height: "100% !important" }}
     >
-      <Todo />
-      <Todo />
-      <Todo />
-      <Todo />
-      <Todo />
+      {allTodos?.length > 0 ? (
+        allTodos?.map((todo: any) => (
+          <Todo
+            key={todo.id}
+            todo={todo}
+            deleteTodo={deleteTodo}
+            updateTodo={updateTodo}
+          />
+        ))
+      ) : (
+        <NoTodos />
+      )}
     </Stack>
   );
 };
